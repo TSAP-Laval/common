@@ -116,8 +116,10 @@ type Action struct {
 	ZoneID          int
 	Partie          Partie
 	PartieID        int
-	X               float64
-	Y               float64
+	X1              int
+	Y1              int
+	X2              int
+	Y2              int
 	Temps           string
 	PointageMaison  int
 	PointageAdverse int
