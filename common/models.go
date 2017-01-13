@@ -21,6 +21,8 @@ type Entraineur struct {
 // d'une équipe sportive
 type Joueur struct {
 	gorm.Model
+	Prenom                string
+	Nom                   string
 	Numero                int
 	Email                 string
 	PassHash              string
@@ -97,9 +99,11 @@ type Partie struct {
 	EquipeAdverseID int
 	Saison          Saison
 	SaisonID        int
-	Lieux           int
+	Lieu            Lieu
+	LieuID          int
 	Video           Video
 	VideoID         int
+	Date            string
 }
 
 // Action est une modélisation des informations sur une
@@ -112,8 +116,8 @@ type Action struct {
 	ZoneID          int
 	Partie          Partie
 	PartieID        int
-	X               int
-	Y               int
+	X               float64
+	Y               float64
 	Temps           string
 	PointageMaison  int
 	PointageAdverse int
