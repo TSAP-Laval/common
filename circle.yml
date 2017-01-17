@@ -13,4 +13,4 @@ machine:
   environment:
     TSAP_DATABASEDRIVER: sqlite3
     TSAP_CONNECTIONSTRING: "test.db"
-    TSAP_SEEDDATA: "seed"
+    TSAP_SEEDDATA: "~/common/seed"
