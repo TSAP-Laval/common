@@ -1,10 +1,8 @@
-package common_test
+package common
 
 import (
 	"os"
 	"testing"
-
-	"github.com/tsap-laval/common"
 )
 
 type testCase struct {
@@ -15,20 +13,20 @@ type testCase struct {
 
 func TestDatasource(t *testing.T) {
 
-	config, err := common.GetConfig()
+	config, err := GetConfig()
 
 	if err != nil {
 		t.Errorf("Error loading configuration: %s", err.Error())
 	}
 
 	// On seed une base de données de test
-	err = common.SeedData(config.DatabaseDriver, config.ConnectionString, config.SeedDataPath)
+	err = SeedData(config.DatabaseDriver, config.ConnectionString, config.SeedDataPath)
 
 	if err != nil {
 		t.Errorf("Unexpected exception: %s", err.Error())
 	}
 
-	d := common.NewDatasource(config.DatabaseDriver, config.ConnectionString)
+	d := NewDatasource(config.DatabaseDriver, config.ConnectionString)
 
 	t.Run("GetCurrentSeason doesn't fail", func(t *testing.T) {
 		_, err := d.GetCurrentSeason()
