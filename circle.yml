@@ -1,7 +1,7 @@
 dependencies:
   override:
-    go get -t -v ./...
-    go build -v
+    - go get -t -v ./...
+    - go build -v
   post:
     - go get -u github.com/golang/lint/golint
 
