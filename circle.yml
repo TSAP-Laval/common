@@ -11,4 +11,4 @@ test:
 
 dependencies:
   override:
-    - go get ./...
+    - go get
