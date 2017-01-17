@@ -78,7 +78,7 @@ func (d *Datasource) GetPlayer(playerID uint) (*models.Joueur, error) {
 	return &j, err
 }
 
-// GetMatches Gets the matches of a specific player
+// GetMatches obtient les match d'un joueur (pour une équipe, pour une saison)
 func (d *Datasource) GetMatches(playerID uint, teamID uint, seasonID uint) ([]models.Partie, error) {
 	var err error
 
