@@ -1,7 +1,6 @@
 dependencies:
   post:
     - go get -u github.com/golang/lint/golint
-    - go get ./...
 
 test:
   override:
@@ -9,3 +8,7 @@ test:
     - golint ./...
     - go tool vet .
     - go test -v -race ./...
+
+dependencies:
+  override:
+    - go get ./...
