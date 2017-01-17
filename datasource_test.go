@@ -108,6 +108,6 @@ func TestDatasource(t *testing.T) {
 		})
 	}
 
-	// Teardown
+	// Teardown de la BD de test
 	os.Remove("test.db")
 }
