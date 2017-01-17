@@ -6,5 +6,5 @@ import "github.com/jinzhu/gorm"
 // possibles  d'action
 type TypeAction struct {
 	gorm.Model
-	Nom string
+	Nom string `gorm:"unique"`
 }

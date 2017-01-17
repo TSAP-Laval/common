@@ -15,7 +15,3 @@ type Equipe struct {
 	Entraineurs []Entraineur `gorm:"many2many:entraineur_equipe;"`
 	Joueurs     []Joueur     `gorm:"many2many:joueur_equipe;"`
 }
-
-type displayTeam struct {
-	DisplayPair
-}

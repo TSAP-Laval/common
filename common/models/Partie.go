@@ -1,10 +1,6 @@
 package models
 
-import (
-	"time"
-
-	"github.com/jinzhu/gorm"
-)
+import "github.com/jinzhu/gorm"
 
 // Partie est une modélisation des informations
 // sur une partie entre deux équipes
@@ -21,11 +17,13 @@ type Partie struct {
 	Video           Video
 	VideoID         int
 	Date            string
+	Actions         []Action
 }
 
-type playerMatch struct {
-	ID           int             `json:"match_id"`
-	Date         time.Time       `json:"date"`
-	OpposingTeam string          `json:"opposing"`
-	Metrics      []displayMetric `json:"metrics"`
+// Expand effectue un fetch de tous les children de la partie
+// (has-many, has-one, pas belongs-to)
+func (p *Partie) Expand(db *gorm.DB) {
+	db.Model(p).Related(&(p.Actions))
+	db.Model(p).Related(&(p.EquipeMaison), "EquipeMaisonID")
+	db.Model(p).Related(&(p.EquipeAdverse), "EquipeAdverseID")
 }

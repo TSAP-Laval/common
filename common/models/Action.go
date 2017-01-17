@@ -11,6 +11,7 @@ import (
 type Action struct {
 	gorm.Model
 	TypeAction      TypeAction
+	TypeActionID    int
 	ActionPositive  bool
 	Zone            Zone
 	ZoneID          int
@@ -25,4 +26,11 @@ type Action struct {
 	PointageAdverse int
 	Joueur          Joueur
 	JoueurID        int
+}
+
+// Expand effectue un fetch de tous les children de l'action
+// (has-many, has-one, pas belongs-to)
+func (a *Action) Expand(db *gorm.DB) {
+	db.Model(a).Related(&(a.TypeAction))
+	db.Model(a).Related(&(a.Zone))
 }

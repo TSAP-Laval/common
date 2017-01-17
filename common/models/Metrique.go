@@ -10,9 +10,3 @@ type Metrique struct {
 	Equipe   Equipe
 	EquipeID int
 }
-
-type displayMetric struct {
-	DisplayPair
-	Value     float64 `json:"value"`
-	Deviation float64 `json:"value"`
-}

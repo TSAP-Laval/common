@@ -8,7 +8,3 @@ type Saison struct {
 	gorm.Model
 	Annees string `gorm:"size:10"`
 }
-
-type displaySeason struct {
-	DisplayPair
-}
