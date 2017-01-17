@@ -1,6 +1,5 @@
 dependencies:
   post:
-    - go get ./..
     - go get -u github.com/golang/lint/golint
 
 test:
