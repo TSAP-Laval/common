@@ -8,3 +8,9 @@ test:
     - golint ./...
     - go tool vet .
     - go test -v
+
+machine:
+  environment:
+    TSAP_DATABASEDRIVER: sqlite3
+    TSAP_CONNECTIONSTRING: "test.db"
+    TSAP_SEEDDATA: "seed"
