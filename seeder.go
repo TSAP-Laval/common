@@ -297,6 +297,8 @@ func SeedData(dbType string, connString string, dataFolder string) error {
 	return err
 }
 
+// jsonLoad est une fonction générique qui charge un fichier JSON
+// dans une struct passée en référence
 func jsonLoad(path string, out interface{}) error {
 	raw, err := ioutil.ReadFile(path)
 
