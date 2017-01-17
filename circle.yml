@@ -1,7 +1,4 @@
 dependencies:
-  override:
-    - cd common/models && go get ./... && go install
-    - cd ../.. && go get -t ./...
   post:
     - go get -u github.com/golang/lint/golint
 
