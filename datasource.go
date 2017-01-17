@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jinzhu/gorm"
-	"github.com/tsap-laval/tsap-common/common/models"
+	"github.com/tsap-laval/models"
 )
 
 // Datasource représente une connexion à une base de

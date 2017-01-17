@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/tsap-laval/tsap-common/common"
+	"github.com/tsap-laval/common"
 )
 
 type testCase struct {
