@@ -127,7 +127,7 @@ func (d *Datasource) GetCoach(coachID uint) (*models.Entraineur, error) {
 
 	e := models.Entraineur{}
 
-	db.First(&j, coachID)
+	db.First(&e, coachID)
 
 	if e.ID != coachID {
 		return nil, fmt.Errorf("Coach %d not found", coachID)
