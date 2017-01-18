@@ -282,9 +282,9 @@ func SeedData(dbType string, connString string, dataFolder string) error {
 		}
 	}
 
-	for i := 0; i < len(partieData); i++ {
+	for i := 0; i < 3; i++ {
 		// Création de 50 actions par partie
-		for j := 0; j <= 50; j++ {
+		for j := 0; j <= 1000; j++ {
 			if j%2 == 0 {
 				db.Save(pickAction(&partieData[i].EquipeMaison, &partieData[i]))
 			} else {
