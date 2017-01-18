@@ -10,6 +10,11 @@ func TestDatasource(t *testing.T) {
 	var config *Configuration
 	var err error
 
+	p, _ := os.Getwd()
+
+	t.Logf("CWD Is %s", p)
+	return
+
 	config, err = GetConfig()
 	if err != nil {
 		t.Errorf("Error loading configuration: %s", err.Error())
