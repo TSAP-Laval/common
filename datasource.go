@@ -141,3 +141,28 @@ func (d *Datasource) GetMatch(matchID uint) (*models.Partie, error) {
 
 	return &match, err
 }
+
+// GetCoach retourne l'instance de l'entraineur correspondant au ID
+func (d *Datasource) GetCoach(coachID uint) (*models.Entraineur, error) {
+	var err error
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	defer db.Close()
+
+	if err != nil {
+		return nil, err
+	}
+
+	e := models.Entraineur{}
+
+	db.First(&e, coachID)
+
+	if e.ID != coachID {
+		return nil, fmt.Errorf("Coach %d not found", coachID)
+	}
+
+	db.Model(&e).Association("Equipes").Find(&e.Equipes)
+
+	return &e, err
+}
