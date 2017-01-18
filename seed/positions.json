@@ -1,0 +1,17 @@
+[
+	{
+		"nom": "Attaquant"
+	},
+    {
+		"nom": "Ailier"
+	},
+    {
+		"nom": "Gardien de but"
+	},
+    {
+		"nom": "Défenseur"
+	},
+    {
+		"nom": "Demi"
+	}
+]

@@ -1,0 +1,38 @@
+[
+	{
+		"nom": "Duis risus odio, auctor",
+		"ville": "Vottem",
+		"sport_id": 2,
+		"niveau_id": 3
+	},
+	{
+		"nom": "lectus quis massa. Mauris",
+		"ville": "Rampur",
+		"sport_id": 2,
+		"niveau_id": 4
+	},
+	{
+		"nom": "enim. Etiam imperdiet",
+		"ville": "Coalville",
+		"sport_id": 1,
+		"niveau_id": 4
+	},
+	{
+		"nom": "Aliquam tincidunt, nunc ac",
+		"ville": "Donosti",
+		"sport_id": 1,
+		"niveau_id": 6
+	},
+	{
+		"nom": "ipsum porta elit, a",
+		"ville": "New Bombay",
+		"sport_id": 1,
+		"niveau_id": 2
+	},
+	{
+		"nom": "Ut tincidunt vehicula",
+		"ville": "West Jordan",
+		"sport_id": 1,
+		"niveau_id": 2
+	}
+]
