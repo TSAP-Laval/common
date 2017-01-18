@@ -3,6 +3,8 @@ package common
 import (
 	"os"
 	"testing"
+
+	"github.com/kelseyhightower/envconfig"
 )
 
 type testCase struct {
@@ -11,9 +13,27 @@ type testCase struct {
 	ExpectID uint
 }
 
+type configuration struct {
+	DatabaseDriver   string
+	ConnectionString string
+	SeedDataPath     string
+}
+
+func getConfig() (*configuration, error) {
+	var c configuration
+
+	err := envconfig.Process("TSAP", &c)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &c, err
+}
+
 func TestDatasource(t *testing.T) {
 
-	config, err := GetConfig()
+	config, err := getConfig()
 
 	if err != nil {
 		t.Errorf("Error loading configuration: %s", err.Error())
