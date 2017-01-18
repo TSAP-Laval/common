@@ -128,7 +128,6 @@ func (d *Datasource) GetMatch(matchID uint) (*models.Partie, error) {
 	match := models.Partie{}
 
 	db.First(&match, matchID)
-	match.Expand(db)
 
 	if match.ID != matchID {
 		return nil, fmt.Errorf("Match %d not found", matchID)
