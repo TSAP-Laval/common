@@ -27,6 +27,8 @@ func (d *Datasource) GetCurrentSeason() (*models.Saison, error) {
 		return nil, err
 	}
 
+	defer db.Close()
+
 	s := models.Saison{}
 
 	db.Last(&s)
@@ -44,6 +46,8 @@ func (d *Datasource) GetTeam(teamID uint) (*models.Equipe, error) {
 		return nil, err
 	}
 
+	defer db.Close()
+
 	t := models.Equipe{}
 
 	db.First(&t, teamID)
@@ -60,6 +64,8 @@ func (d *Datasource) GetPlayer(playerID uint) (*models.Joueur, error) {
 	var err error
 
 	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	defer db.Close()
 
 	if err != nil {
 		return nil, err
@@ -87,6 +93,8 @@ func (d *Datasource) GetMatches(playerID uint, teamID uint, seasonID uint) ([]mo
 	if err != nil {
 		return nil, err
 	}
+
+	defer db.Close()
 
 	matches := []models.Partie{}
 
