@@ -8,11 +8,10 @@ import (
 
 	"path"
 
+	"github.com/TSAP-Laval/models"
 	"github.com/jinzhu/gorm"
-	"github.com/tsap-laval/models"
 
 	// Import global pour utiliser sqlite avec gorm
-
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
