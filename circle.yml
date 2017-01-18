@@ -13,4 +13,4 @@ machine:
   environment:
     TSAP_DATABASEDRIVER: sqlite3
     TSAP_CONNECTIONSTRING: "test.db"
-    TSAP_SEEDDATA: "~/common/seed"
+    TSAP_SEEDDATA: "/home/ubuntu/.go_project/src/github.com/TSAP-Laval/common/seed"
