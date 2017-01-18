@@ -10,9 +10,7 @@ func TestDatasource(t *testing.T) {
 	var config *Configuration
 	var err error
 
-	p, _ := os.Getwd()
-
-	t.Logf("CWD Is %s", p)
+	// p, _ := os.Getwd()
 
 	config, err = GetConfig()
 	if err != nil {

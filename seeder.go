@@ -12,6 +12,8 @@ import (
 	"github.com/tsap-laval/models"
 
 	// Import global pour utiliser sqlite avec gorm
+	"errors"
+
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
@@ -35,6 +37,7 @@ func SeedData(dbType string, connString string, dataFolder string) error {
 		&models.Video{})
 
 	var joueursData []models.Joueur
+	return errors.New(path.Join(dataFolder, "joueurs.json"))
 	err = jsonLoad(path.Join(dataFolder, "joueurs.json"), &joueursData)
 	if err != nil {
 		return err
