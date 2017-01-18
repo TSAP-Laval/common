@@ -165,30 +165,3 @@ func (d *Datasource) GetCoach(coachID uint) (*models.Entraineur, error) {
 
 	return &e, err
 }
-
-// GetPlayers obtient toutes les joueurs d'une équipe.
-func (d *Datasource) GetPlayers(teamID uint, seasonID uint) ([]models.Joueur, error) {
-	var err error
-
-	db, err := gorm.Open(d.dbType, d.dbConn)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer db.Close()
-
-	// Pour l'instant il est non utilisé.
-	//s := int(seasonID)
-
-	equipe := models.Equipe{}
-
-	// L'équipe qui correspon à l'ID en param.
-	db.First(&equipe, teamID)
-
-	if equipe.ID != teamID {
-		return nil, fmt.Errorf("Team %d not found", teamID)
-	}
-
-	return equipe.Joueurs, err
-}
