@@ -3,8 +3,8 @@ package common
 import (
 	"fmt"
 
+	"github.com/TSAP-Laval/models"
 	"github.com/jinzhu/gorm"
-	"github.com/tsap-laval/models"
 )
 
 // Datasource représente une connexion à une base de
