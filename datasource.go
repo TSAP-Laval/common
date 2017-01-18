@@ -113,6 +113,34 @@ func (d *Datasource) GetMatches(playerID uint, teamID uint, seasonID uint) ([]mo
 	return matches, err
 }
 
+// GetMatch obtient toutes les informations sur un match
+func (d *Datasource) GetMatch(matchID uint) (*models.Partie, error) {
+	var err error
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	match := models.Partie{}
+
+	db.First(&match, matchID)
+
+	if match.ID != matchID {
+		return nil, fmt.Errorf("Match %d not found", matchID)
+	}
+
+	match.Expand(db)
+	for i := 0; i < len(match.Actions); i++ {
+		match.Actions[i].Expand(db)
+	}
+
+	return &match, err
+}
+
 // GetCoach retourne l'instance de l'entraineur correspondant au ID
 func (d *Datasource) GetCoach(coachID uint) (*models.Entraineur, error) {
 	var err error
