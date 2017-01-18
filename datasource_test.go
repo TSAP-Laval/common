@@ -127,5 +127,7 @@ func TestDatasource(t *testing.T) {
 	}
 
 	// Teardown de la BD de test
-	os.Remove("test.db")
+	if config.DatabaseDriver == "sqlite3" {
+		os.Remove(config.ConnectionString)
+	}
 }
