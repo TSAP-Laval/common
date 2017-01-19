@@ -177,7 +177,15 @@ func SeedData(dbType string, connString string, dataFolder string) error {
 		db.Model(equipe2).Association("Joueurs").Find(&(equipe2.Joueurs))
 		partie.EquipeAdverse = *equipe2
 		saison := &models.Saison{}
-		db.First(saison, rand.Intn(3)+1)
+
+		// =======================================
+		// WORKAROUND HACK À CHANGER UN JOUR TO DO
+		// =======================================
+		// On prend seulement la dernière saison parce que l'API
+		// pour l'instant handle seulement la saison en cours.
+		// (on va ajouter le paramétrage dans le prochain sprint)
+		//db.First(saison, rand.Intn(3)+1)
+		db.Last(saison)
 		partie.Saison = *saison
 		lieu := &models.Lieu{}
 		db.First(lieu, rand.Intn(100)+1)
@@ -282,9 +290,15 @@ func SeedData(dbType string, connString string, dataFolder string) error {
 		}
 	}
 
-	for i := 0; i < 3; i++ {
-		// Création de 50 actions par partie
-		for j := 0; j <= 1000; j++ {
+	for i := 0; i < len(partieData); i++ {
+		var actionCount int
+		if i < 4 {
+			actionCount = 1000
+		} else {
+			actionCount = 50
+		}
+
+		for j := 0; j <= actionCount; j++ {
 			if j%2 == 0 {
 				db.Save(pickAction(&partieData[i].EquipeMaison, &partieData[i]))
 			} else {
