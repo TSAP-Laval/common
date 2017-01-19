@@ -55,6 +55,7 @@ func (d *Datasource) GetTeam(teamID uint) (*models.Equipe, error) {
 	if t.ID != teamID {
 		return nil, fmt.Errorf("Team %d not found", teamID)
 	}
+	db.Model(&t).Association("Joueurs").Find(&t.Joueurs)
 
 	return &t, err
 }
