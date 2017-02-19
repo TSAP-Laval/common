@@ -36,6 +36,23 @@ func (d *Datasource) GetCurrentSeason() (*models.Saison, error) {
 	return &s, err
 }
 
+// GetSeasons retourne la liste des saisons
+func (d *Datasource) GetSeasons() (*[]models.Saison, error) {
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	s := []models.Saison{}
+
+	db.Find(&s)
+
+	return &s, nil
+}
+
 // GetTeam retourne l'instance d'Equipe correspondant au ID
 func (d *Datasource) GetTeam(teamID uint) (*models.Equipe, error) {
 	var err error
@@ -112,6 +129,37 @@ func (d *Datasource) GetMatches(playerID uint, teamID uint, seasonID uint) ([]mo
 	}
 
 	return matches, err
+}
+
+// GetPositions retourne une liste de positions occupées par le joueur
+func (d *Datasource) GetPositions(playerID int) ([]models.Position, error) {
+	var err error
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	positionsMap := make(map[models.Position]bool)
+	positions := []models.Position{}
+
+	positionParties := []models.JoueurPositionPartie{}
+
+	db.Where(models.JoueurPositionPartie{JoueurID: playerID}).Find(&positionParties)
+
+	for i := 0; i < len(positionParties); i++ {
+		positionParties[i].Expand(db)
+		positionsMap[positionParties[i].Position] = true
+	}
+
+	for k := range positionsMap {
+		positions = append(positions, k)
+	}
+
+	return positions, nil
 }
 
 // GetMatch obtient toutes les informations sur un match
