@@ -261,16 +261,21 @@ func SeedData(dbType string, connString string, dataFolder string) error {
 
 		var zone models.Zone
 
+		X1 := rand.Float64()
+		Y1 := rand.Float64()
+
+		var X2 float64
+		var Y2 float64
+
 		if rand.Int()%2 == 0 {
 			zone = zoneOff
+			X2 = -1
+			Y2 = -1
 		} else {
 			zone = zoneDef
+			X2 = rand.Float64()
+			Y2 = rand.Float64()
 		}
-
-		X1 := rand.Float64()
-		X2 := rand.Float64()
-		Y1 := rand.Float64()
-		Y2 := rand.Float64()
 
 		t := time.Duration(40)
 
