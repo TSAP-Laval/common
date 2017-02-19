@@ -126,6 +126,37 @@ func TestDatasource(t *testing.T) {
 		})
 	}
 
+	matchCases := []testCase{
+		{TestID: 3, IsNil: false, ExpectID: 3},
+		{TestID: 99999, IsNil: true, ExpectID: 1},
+	}
+
+	for _, c := range matchCases {
+		t.Run("GetLastMatch() doesn't fail", func(t *testing.T) {
+			_, err := d.GetLastMatch(c.TestID)
+
+			if !c.IsNil && err != nil {
+				t.Errorf("Unexpected exception: %s", err.Error())
+			}
+		})
+
+		t.Run("GetLastMatch() returns correct match for the right team", func(t *testing.T) {
+			match, _ := d.GetLastMatch(c.TestID)
+
+			if !c.IsNil && (match.EquipeAdverseID != int(c.ExpectID)) && (match.EquipeMaisonID != int(c.ExpectID)) {
+				t.Errorf("Expected a match for this teamid %d", c.ExpectID)
+			}
+		})
+
+		t.Run("GetLastMatch() returns nil when match not found", func(t *testing.T) {
+			match, err := d.GetLastMatch(c.TestID)
+
+			if c.IsNil && ((match != nil) || err == nil) {
+				t.Errorf("Expected match to be Nil, got ID %d instead", match.ID)
+			}
+		})
+	}
+
 	// Teardown de la BD de test
 	if config.DatabaseDriver == "sqlite3" {
 		os.Remove(config.ConnectionString)
