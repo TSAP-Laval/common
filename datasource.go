@@ -103,7 +103,7 @@ func (d *Datasource) GetPlayer(playerID uint) (*models.Joueur, error) {
 }
 
 // GetMatches obtient les match d'un joueur (pour une équipe, pour une saison)
-func (d *Datasource) GetMatches(playerID uint, teamID uint, seasonID uint) ([]models.Partie, error) {
+func (d *Datasource) GetMatches(teamID uint, seasonID uint) ([]models.Partie, error) {
 	var err error
 
 	db, err := gorm.Open(d.dbType, d.dbConn)
