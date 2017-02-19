@@ -178,14 +178,8 @@ func SeedData(dbType string, connString string, dataFolder string) error {
 		partie.EquipeAdverse = *equipe2
 		saison := &models.Saison{}
 
-		// =======================================
-		// WORKAROUND HACK À CHANGER UN JOUR TO DO
-		// =======================================
-		// On prend seulement la dernière saison parce que l'API
-		// pour l'instant handle seulement la saison en cours.
-		// (on va ajouter le paramétrage dans le prochain sprint)
-		//db.First(saison, rand.Intn(3)+1)
-		db.Last(saison)
+		db.First(saison, rand.Intn(3)+1)
+		//db.Last(saison)
 		partie.Saison = *saison
 		lieu := &models.Lieu{}
 		db.First(lieu, rand.Intn(100)+1)
@@ -261,16 +255,21 @@ func SeedData(dbType string, connString string, dataFolder string) error {
 
 		var zone models.Zone
 
+		X1 := rand.Float64()
+		Y1 := rand.Float64()
+
+		var X2 float64
+		var Y2 float64
+
 		if rand.Int()%2 == 0 {
 			zone = zoneOff
+			X2 = -1
+			Y2 = -1
 		} else {
 			zone = zoneDef
+			X2 = rand.Float64()
+			Y2 = rand.Float64()
 		}
-
-		X1 := rand.Float64()
-		X2 := rand.Float64()
-		Y1 := rand.Float64()
-		Y2 := rand.Float64()
 
 		t := time.Duration(40)
 

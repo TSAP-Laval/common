@@ -36,6 +36,23 @@ func (d *Datasource) GetCurrentSeason() (*models.Saison, error) {
 	return &s, err
 }
 
+// GetSeasons retourne la liste des saisons
+func (d *Datasource) GetSeasons() (*[]models.Saison, error) {
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	s := []models.Saison{}
+
+	db.Find(&s)
+
+	return &s, nil
+}
+
 // GetTeam retourne l'instance d'Equipe correspondant au ID
 func (d *Datasource) GetTeam(teamID uint) (*models.Equipe, error) {
 	var err error
@@ -88,7 +105,7 @@ func (d *Datasource) GetPlayer(playerID uint) (*models.Joueur, error) {
 //TODO(GetMatches) The parameter playerID is never used in the function GetMatches
 
 // GetMatches obtient les match d'un joueur (pour une équipe, pour une saison)
-func (d *Datasource) GetMatches(playerID uint, teamID uint, seasonID uint) ([]models.Partie, error) {
+func (d *Datasource) GetMatches(teamID uint, seasonID uint) ([]models.Partie, error) {
 	var err error
 
 	db, err := gorm.Open(d.dbType, d.dbConn)
