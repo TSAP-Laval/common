@@ -190,6 +190,31 @@ func (d *Datasource) GetMatch(matchID uint) (*models.Partie, error) {
 	return &match, err
 }
 
+// GetLatestMatch retourne le dernie match d'une equipe dont l'ID est reçu en paramètre.
+func (d *Datasource) GetLatestMatch(teamID uint) (*models.Partie, error) {
+	var err error
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	match := models.Partie{}
+
+	tID := int(teamID)
+
+	db.Where(models.Partie{EquipeMaisonID: tID}).Or(models.Partie{EquipeAdverseID: tID}).Last(&match)
+
+	if match.EquipeMaisonID != tID && match.EquipeAdverseID != tID {
+		return nil, fmt.Errorf("Last match for team %d not found", teamID)
+	}
+
+	return &match, err
+}
+
 // GetCoach retourne l'instance de l'entraineur correspondant au ID
 func (d *Datasource) GetCoach(coachID uint) (*models.Entraineur, error) {
 	var err error
