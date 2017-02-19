@@ -178,14 +178,8 @@ func SeedData(dbType string, connString string, dataFolder string) error {
 		partie.EquipeAdverse = *equipe2
 		saison := &models.Saison{}
 
-		// =======================================
-		// WORKAROUND HACK À CHANGER UN JOUR TO DO
-		// =======================================
-		// On prend seulement la dernière saison parce que l'API
-		// pour l'instant handle seulement la saison en cours.
-		// (on va ajouter le paramétrage dans le prochain sprint)
-		//db.First(saison, rand.Intn(3)+1)
-		db.Last(saison)
+		db.First(saison, rand.Intn(3)+1)
+		//db.Last(saison)
 		partie.Saison = *saison
 		lieu := &models.Lieu{}
 		db.First(lieu, rand.Intn(100)+1)
