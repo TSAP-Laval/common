@@ -84,6 +84,8 @@ func (d *Datasource) GetPlayer(playerID uint) (*models.Joueur, error) {
 	return &j, err
 }
 
+//TODO(GetMatches) The parameter playerID is never used in the function GetMatches
+
 // GetMatches obtient les match d'un joueur (pour une équipe, pour une saison)
 func (d *Datasource) GetMatches(playerID uint, teamID uint, seasonID uint) ([]models.Partie, error) {
 	var err error
