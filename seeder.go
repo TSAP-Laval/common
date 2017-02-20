@@ -179,7 +179,6 @@ func SeedData(dbType string, connString string, dataFolder string) error {
 		saison := &models.Saison{}
 
 		db.First(saison, rand.Intn(3)+1)
-		//db.Last(saison)
 		partie.Saison = *saison
 		lieu := &models.Lieu{}
 		db.First(lieu, rand.Intn(100)+1)
@@ -204,41 +203,25 @@ func SeedData(dbType string, connString string, dataFolder string) error {
 			ind1 = rand.Intn(len(equipeData))
 			ind2 = rand.Intn(len(equipeData))
 		}
-		team1 := equipeData[ind1]
-		team2 := equipeData[ind2]
 
-		players1 := []models.Joueur{}
-		players2 := []models.Joueur{}
+		team1 := &partieData[i].EquipeMaison
+		team2 := &partieData[i].EquipeAdverse
 
-		// On shuffle une liste de joueurs
-		dest := make([]models.Joueur, len(joueursData))
-		perm := rand.Perm(len(joueursData))
-		for i, v := range perm {
-			dest[v] = joueursData[i]
-		}
-
-		// On assigne 9 joueurs aléatoires à chaque équipe
-		for i := 0; i < 19; i++ {
-			players1 = append(players1, dest[i])
-			i++
-			players2 = append(players2, dest[i])
-		}
-
-		for _, pl := range players1 {
-			db.Create(&models.JoueurPositionPartie{
-				Joueur:   pl,
+		for k := 0; k < len(team1.Joueurs); k++ {
+			db.Save(&models.JoueurPositionPartie{
+				Joueur:   team1.Joueurs[k],
 				Partie:   partieData[i],
 				Position: positionData[rand.Intn(len(positionData))],
-				Equipe:   team1,
+				Equipe:   *team1,
 			})
 		}
 
-		for _, pl := range players2 {
-			db.Create(&models.JoueurPositionPartie{
-				Joueur:   pl,
+		for k := 0; k < len(team2.Joueurs); k++ {
+			db.Save(&models.JoueurPositionPartie{
+				Joueur:   team2.Joueurs[k],
 				Partie:   partieData[i],
 				Position: positionData[rand.Intn(len(positionData))],
-				Equipe:   team2,
+				Equipe:   *team2,
 			})
 		}
 
