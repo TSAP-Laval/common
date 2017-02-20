@@ -102,7 +102,7 @@ func (d *Datasource) GetPlayer(playerID uint) (*models.Joueur, error) {
 	return &j, err
 }
 
-// GetMatches obtient les match d'un joueur (pour une équipe, pour une saison)
+// GetMatches obtient les match d'un joueur (pour une équipe, pour une saison, pour une position?)
 func (d *Datasource) GetMatches(teamID uint, seasonID uint) ([]models.Partie, error) {
 	var err error
 
@@ -129,6 +129,32 @@ func (d *Datasource) GetMatches(teamID uint, seasonID uint) ([]models.Partie, er
 	}
 
 	return matches, err
+}
+
+// GetMatchPosition retourne la position occupée par un joueur pour un match
+func (d *Datasource) GetMatchPosition(playerID int, matchID int) (*models.Position, error) {
+	var err error
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	posPartie := models.JoueurPositionPartie{}
+
+	db.Where(models.JoueurPositionPartie{JoueurID: playerID, PartieID: matchID}).First(&posPartie)
+
+	if posPartie.JoueurID != playerID {
+		return nil, fmt.Errorf("No position for player %d", playerID)
+	}
+
+	posPartie.Expand(db)
+
+	pos := posPartie.Position
+
+	return &pos, nil
 }
 
 // GetPositions retourne une liste de positions occupées par le joueur
