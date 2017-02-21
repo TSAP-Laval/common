@@ -238,6 +238,12 @@ func (d *Datasource) GetLatestMatch(teamID uint) (*models.Partie, error) {
 		return nil, fmt.Errorf("Last match for team %d not found", teamID)
 	}
 
+	match.Expand(db)
+
+	for i := 0; i < len(match.Actions); i++ {
+		match.Actions[i].Expand(db)
+	}
+
 	return &match, err
 }
 
