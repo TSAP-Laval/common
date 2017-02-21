@@ -132,7 +132,7 @@ func TestDatasource(t *testing.T) {
 	}
 
 	for _, c := range matchCases {
-		t.Run("GetPlayer() doesn't fail", func(t *testing.T) {
+		t.Run("GetLatestMatch() doesn't fail", func(t *testing.T) {
 			_, err := d.GetLatestMatch(c.TestID)
 
 			if !c.IsNil && err != nil {
@@ -140,7 +140,7 @@ func TestDatasource(t *testing.T) {
 			}
 		})
 
-		t.Run("GetPlayer() returns correct player", func(t *testing.T) {
+		t.Run("GetLatestMatch() returns correct match", func(t *testing.T) {
 			match, _ := d.GetLatestMatch(c.TestID)
 
 			if !c.IsNil && (match.EquipeMaisonID != int(c.ExpectID)) && (match.EquipeAdverseID != int(c.ExpectID)) {
@@ -148,7 +148,7 @@ func TestDatasource(t *testing.T) {
 			}
 		})
 
-		t.Run("GetPlayer returns nil when player not found", func(t *testing.T) {
+		t.Run("GetLatestMatch returns nil when team not found", func(t *testing.T) {
 			match, err := d.GetLatestMatch(c.TestID)
 
 			if c.IsNil && ((match != nil) || err == nil) {
