@@ -7,6 +7,22 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+// IDatasource représente l'interface abastraite
+// d'une struct capable de servir de source de données
+// pour l'application
+type IDatasource interface {
+	GetCurrentSeason() (*models.Saison, error)
+	GetSeasons() (*[]models.Saison, error)
+	GetTeam(teamID uint) (*models.Equipe, error)
+	GetPlayer(playerID uint) (*models.Joueur, error)
+	GetMatches(teamID uint, seasonID uint) ([]models.Partie, error)       // TODO: Why no pointer here?
+	GetMatchPosition(playerID int, matchID int) (*models.Position, error) // TODO: Why no int here?
+	GetPositions(playerID int) ([]models.Position, error)                 // TODO: Why no pointer here? Why no uint?
+	GetMatch(matchID uint) (*models.Partie, error)
+	GetLatestMatch(teamID uint) (*models.Partie, error)
+	GetCoach(coachID uint) (*models.Entraineur, error)
+}
+
 // Datasource représente une connexion à une base de
 // données
 type Datasource struct {
