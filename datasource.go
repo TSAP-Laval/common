@@ -198,7 +198,20 @@ func (d *Datasource) GetPositions(playerID uint) (*[]models.Position, error) {
 	}
 
 	for k := range positionsMap {
-		positions = append(positions, k)
+		alreadyAdded := false
+
+		// On vérifie l'absence de la position de la liste
+		// (Il n'y a pas de .indexOf() en Go)
+		for iP := 0; iP < len(positions) && !alreadyAdded; iP++ {
+			p := positions[iP]
+			if k.ID == p.ID {
+				alreadyAdded = true
+			}
+		}
+
+		if !alreadyAdded {
+			positions = append(positions, k)
+		}
 	}
 
 	return &positions, nil
