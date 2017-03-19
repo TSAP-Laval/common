@@ -21,7 +21,7 @@ type IDatasource interface {
 	GetMatch(matchID uint) (*models.Partie, error)
 	GetLatestMatch(teamID uint) (*models.Partie, error)
 	GetCoach(coachID uint) (*models.Entraineur, error)
-	CreateMetric(name string, formula string, teamID uint) error
+	CreateMetric(name string, formula string, description string, teamID uint) error
 }
 
 // Datasource représente une connexion à une base de
@@ -303,7 +303,7 @@ func (d *Datasource) GetCoach(coachID uint) (*models.Entraineur, error) {
 }
 
 // CreateMetric crée une nouvelle métrique
-func (d *Datasource) CreateMetric(name string, formula string, teamID uint) error {
+func (d *Datasource) CreateMetric(name string, formula string, description string, teamID uint) error {
 
 	db, err := gorm.Open(d.dbType, d.dbConn)
 
@@ -313,7 +313,7 @@ func (d *Datasource) CreateMetric(name string, formula string, teamID uint) erro
 
 	defer db.Close()
 
-	metric := models.Metrique{Nom: name, Equation: formula, EquipeID: int(teamID)}
+	metric := models.Metrique{Nom: name, Equation: formula, Description: description, EquipeID: int(teamID)}
 
 	db.Create(&metric)
 
