@@ -147,6 +147,7 @@ func SeedData(dbType string, connString string, dataFolder string) error {
 		return err
 	}
 	for _, metrique := range metriqueData {
+		metrique.Description = "Description de la métrique"
 		db.Create(&metrique)
 	}
 
