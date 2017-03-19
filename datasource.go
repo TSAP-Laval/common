@@ -22,6 +22,7 @@ type IDatasource interface {
 	GetLatestMatch(teamID uint) (*models.Partie, error)
 	GetCoach(coachID uint) (*models.Entraineur, error)
 	CreateMetric(name string, formula string, description string, teamID uint) error
+	GetMetrics(teamID uint) (*[]models.Metrique, error)
 }
 
 // Datasource représente une connexion à une base de
@@ -318,4 +319,21 @@ func (d *Datasource) CreateMetric(name string, formula string, description strin
 	db.Create(&metric)
 
 	return nil
+}
+
+// GetMetrics retourne une liste de toutes les métriques d'une équipe
+func (d *Datasource) GetMetrics(teamID uint) (*[]models.Metrique, error) {
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	metrics := []models.Metrique{}
+
+	db.Where(&models.Metrique{EquipeID: int(teamID)}).Find(&metrics)
+
+	return &metrics, nil
 }
