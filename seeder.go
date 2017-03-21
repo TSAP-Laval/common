@@ -32,7 +32,7 @@ func SeedData(dbType string, connString string, dataFolder string) error {
 		&models.Equipe{}, &models.Partie{}, &models.Action{},
 		&models.Administrateur{}, &models.Position{},
 		&models.JoueurPositionPartie{}, &models.Metrique{},
-		&models.Video{})
+		&models.Video{}, &models.MapParameters{})
 
 	var joueursData []models.Joueur
 	err = jsonLoad(path.Join(dataFolder, "joueurs.json"), &joueursData)
