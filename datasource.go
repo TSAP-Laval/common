@@ -334,19 +334,13 @@ func (d *Datasource) UpdateMetric(metricID uint, name string, formula string, de
 
 	defer db.Close()
 
-	m := models.Metrique{}
-
-	db.First(&m, metricID)
-
-	if m.ID != metricID {
-		return fmt.Errorf("Metric %d not found", metricID)
+	m := models.Metrique{
+		Nom:         name,
+		Equation:    formula,
+		Description: description,
 	}
 
-	m.Nom = name
-	m.Equation = formula
-	m.Description = description
-
-	db.Save(&m)
+	db.Model(&m).Where("ID = ?", metricID).Updates(m)
 
 	return nil
 }
@@ -367,7 +361,8 @@ func (d *Datasource) DeleteMetric(metricID uint) error {
 	db.First(&m, metricID)
 
 	if m.ID != metricID {
-		return fmt.Errorf("Metric %d not found", metricID)
+		// Metric not found. No worries tho
+		return nil
 	}
 
 	db.Delete(&m)
