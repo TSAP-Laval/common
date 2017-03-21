@@ -23,6 +23,8 @@ type IDatasource interface {
 	GetCoach(coachID uint) (*models.Entraineur, error)
 	CreateMetric(name string, formula string, description string, teamID uint) error
 	GetMetrics(teamID uint) (*[]models.Metrique, error)
+	GetMapSize(teamID uint) (*models.MapParameters, error)
+	SetMapSize(width int, height int, teamID uint) error
 }
 
 // Datasource représente une connexion à une base de
@@ -336,4 +338,45 @@ func (d *Datasource) GetMetrics(teamID uint) (*[]models.Metrique, error) {
 	db.Where(&models.Metrique{EquipeID: int(teamID)}).Find(&metrics)
 
 	return &metrics, nil
+}
+
+// GetMapSize retourne un objet contenant les paramètres de la map
+func (d *Datasource) GetMapSize(teamID uint) (*models.MapParameters, error) {
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	params := models.MapParameters{}
+
+	db.Where(&models.MapParameters{EquipeID: int(teamID)}).Find(&params)
+
+	return &params, nil
+}
+
+// SetMapSize change les paramètres déja entrés de la map
+func (d *Datasource) SetMapSize(width int, height int, teamID uint) error {
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+
+	params := models.MapParameters{}
+
+	db.Where(&models.MapParameters{EquipeID: int(teamID)}).Find(&params)
+	if uint(params.EquipeID) == teamID {
+		db.Model(&params).Update("Longeur", width)
+		db.Model(&params).Update("Largeur", height)
+	} else {
+		params := models.MapParameters{Longeur: width, Largeur: height, EquipeID: int(teamID)}
+		db.Create(&params)
+	}
+
+	return nil
 }
