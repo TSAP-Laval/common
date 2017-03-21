@@ -22,6 +22,8 @@ type IDatasource interface {
 	GetLatestMatch(teamID uint) (*models.Partie, error)
 	GetCoach(coachID uint) (*models.Entraineur, error)
 	CreateMetric(name string, formula string, description string, teamID uint) error
+	UpdateMetric(metricID uint, name string, formula string, description string) error
+	DeleteMetric(metricID uint) error
 	GetMetrics(teamID uint) (*[]models.Metrique, error)
 }
 
@@ -317,6 +319,58 @@ func (d *Datasource) CreateMetric(name string, formula string, description strin
 	metric := models.Metrique{Nom: name, Equation: formula, Description: description, EquipeID: int(teamID)}
 
 	db.Create(&metric)
+
+	return nil
+}
+
+// UpdateMetric modifie une métrique existante
+func (d *Datasource) UpdateMetric(metricID uint, name string, formula string, description string) error {
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+
+	m := models.Metrique{}
+
+	db.First(&m, metricID)
+
+	if m.ID != metricID {
+		return fmt.Errorf("Metric %d not found", metricID)
+	}
+
+	m.Nom = name
+	m.Equation = formula
+	m.Description = description
+
+	db.Save(&m)
+
+	return nil
+}
+
+// DeleteMetric supprime une métrique existante
+func (d *Datasource) DeleteMetric(metricID uint) error {
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+
+	m := models.Metrique{}
+
+	db.First(&m, metricID)
+
+	if m.ID != metricID {
+		return fmt.Errorf("Metric %d not found", metricID)
+	}
+
+	db.Delete(&m)
 
 	return nil
 }
