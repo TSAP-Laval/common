@@ -102,8 +102,6 @@ func (d *Datasource) GetPlayer(playerID uint) (*models.Joueur, error) {
 	return &j, err
 }
 
-//TODO(GetMatches) The parameter playerID is never used in the function GetMatches
-
 // GetMatches obtient les match d'un joueur (pour une équipe, pour une saison)
 func (d *Datasource) GetMatches(teamID uint, seasonID uint) ([]models.Partie, error) {
 	var err error
@@ -131,6 +129,68 @@ func (d *Datasource) GetMatches(teamID uint, seasonID uint) ([]models.Partie, er
 	}
 
 	return matches, err
+}
+
+// GetAllTeamsMatchs retourne tous matchs de toutes les équipes d'une saison donnée.
+func (d *Datasource) GetAllTeamsMatchs(seasonID uint) ([]models.Partie, error) {
+	var err error
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	if seasonID <= 0 {
+		return nil, fmt.Errorf("Invalid SeasonID value in GetAllTeamsMatchs function")
+	}
+
+	// Toutes les équipes.
+	allTeams := []models.Equipe{}
+
+	allMatches := []models.Partie{}
+
+	matches := []models.Partie{}
+
+	//Get all teams. NOT REALLY GOOD BUT THERE IS CURRENTLY NO WAY TO HAVE
+	//A LIST OF TEAMS BASED ON A GIVEN SEASON.
+	if err := db.Find(&allTeams).Error; err != nil {
+		return nil, fmt.Errorf("No team found in GetAllTeamsMatchs function")
+	}
+
+	for _, team := range allTeams {
+		matches, err = d.GetMatches(team.ID, seasonID)
+
+		for _, match := range matches {
+			allMatches = append(allMatches, match)
+		}
+	}
+
+	return allMatches, err
+}
+
+// GetAllPositions retourne toutes les positions des joueurs.
+func (d *Datasource) GetAllPositions() ([]models.Position, error) {
+	var err error
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	allPositions := []models.Position{}
+
+	if err := db.Find(&allPositions).Error; err != nil {
+		return nil, fmt.Errorf("No position found in GetAllPositions function")
+	}
+
+	return allPositions, err
+
 }
 
 // GetPositions retourne une liste de positions occupées par le joueur
