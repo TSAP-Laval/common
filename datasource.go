@@ -16,6 +16,8 @@ type IDatasource interface {
 	GetTeam(teamID uint) (*models.Equipe, error)
 	GetPlayer(playerID uint) (*models.Joueur, error)
 	GetMatches(teamID uint, seasonID uint) (*[]models.Partie, error)
+	GetMatchesInfos(teamID uint, seasonID uint) (*[]models.Partie, error)
+	GetMatchActions(teamID uint, matchID uint) (*models.Partie, error)
 	GetMatchPosition(playerID uint, matchID uint) (*models.Position, error)
 	GetPositions(playerID uint) (*[]models.Position, error)
 	GetMatch(matchID uint) (*models.Partie, error)
@@ -151,6 +153,55 @@ func (d *Datasource) GetMatches(teamID uint, seasonID uint) (*[]models.Partie, e
 	}
 
 	return &matches, err
+}
+
+// GetMatchesInfos retourne seulement les informations gémérales sur les matchs
+func (d *Datasource) GetMatchesInfos(teamID uint, seasonID uint) (*[]models.Partie, error) {
+	var err error
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	matches := []models.Partie{}
+
+	t := int(teamID)
+	s := int(seasonID)
+
+	db.Where(models.Partie{EquipeMaisonID: t, SaisonID: s}).Or(models.Partie{EquipeAdverseID: t, SaisonID: s}).Find(&matches)
+
+	for i := 0; i < len(matches); i++ {
+		matches[i].Expand(db)
+	}
+
+	return &matches, err
+}
+
+// GetMatchActions retourne toutes les actions d'une équipe pour un certain match
+func (d *Datasource) GetMatchActions(teamID uint, matchID uint) (*models.Partie, error) {
+	var err error
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	match := models.Partie{}
+	db.Find(&match, int(teamID))
+	match.Expand(db)
+
+	if match.EquipeMaisonID == int(teamID) {
+		match.EquipeMaison.Expand(db)
+	} else {
+		match.EquipeAdverse.Expand(db)
+	}
+	return &match, err
 }
 
 // GetMatchPosition retourne la position occupée par un joueur pour un match
