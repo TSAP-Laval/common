@@ -7,6 +7,29 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+// IDatasource représente l'interface abastraite
+// d'une struct capable de servir de source de données
+// pour l'application
+type IDatasource interface {
+	GetCurrentSeason() (*models.Saison, error)
+	GetSeasons() (*[]models.Saison, error)
+	GetTeam(teamID uint) (*models.Equipe, error)
+	GetPlayer(playerID uint) (*models.Joueur, error)
+	GetMatches(teamID uint, seasonID uint) (*[]models.Partie, error)
+	GetMatchPosition(playerID uint, matchID uint) (*models.Position, error)
+	GetPositions(playerID uint) (*[]models.Position, error)
+	GetMatch(matchID uint) (*models.Partie, error)
+	GetLatestMatch(teamID uint) (*models.Partie, error)
+	GetCoach(coachID uint) (*models.Entraineur, error)
+	CreateMetric(name string, formula string, description string, teamID uint) error
+	UpdateMetric(metricID uint, name string, formula string, description string) error
+	DeleteMetric(metricID uint) error
+	GetMetrics(teamID uint) (*[]models.Metrique, error)
+	GetMapSize(teamID uint) (*models.MapParameters, error)
+	SetMapSize(width int, height int, teamID uint) error
+	GetTypeActions() (*[]models.TypeAction, error)
+}
+
 // Datasource représente une connexion à une base de
 // données
 type Datasource struct {
@@ -17,6 +40,22 @@ type Datasource struct {
 // NewDatasource retourne une nouvelle datasource
 func NewDatasource(dbType string, dbConnString string) *Datasource {
 	return &Datasource{dbType: dbType, dbConn: dbConnString}
+}
+
+// GetTypeActions retourne tous les types d'actions
+func (d *Datasource) GetTypeActions() (*[]models.TypeAction, error) {
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	s := []models.TypeAction{}
+
+	db.Find(&s)
+
+	return &s, nil
 }
 
 // GetCurrentSeason retourne la saison en cours
@@ -102,10 +141,8 @@ func (d *Datasource) GetPlayer(playerID uint) (*models.Joueur, error) {
 	return &j, err
 }
 
-//TODO(GetMatches) The parameter playerID is never used in the function GetMatches
-
-// GetMatches obtient les match d'un joueur (pour une équipe, pour une saison)
-func (d *Datasource) GetMatches(teamID uint, seasonID uint) ([]models.Partie, error) {
+// GetMatches obtient les match d'un joueur (pour une équipe, pour une saison, pour une position?)
+func (d *Datasource) GetMatches(teamID uint, seasonID uint) (*[]models.Partie, error) {
 	var err error
 
 	db, err := gorm.Open(d.dbType, d.dbConn)
@@ -130,11 +167,37 @@ func (d *Datasource) GetMatches(teamID uint, seasonID uint) ([]models.Partie, er
 		}
 	}
 
-	return matches, err
+	return &matches, err
+}
+
+// GetMatchPosition retourne la position occupée par un joueur pour un match
+func (d *Datasource) GetMatchPosition(playerID uint, matchID uint) (*models.Position, error) {
+	var err error
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	posPartie := models.JoueurPositionPartie{}
+
+	db.Where(models.JoueurPositionPartie{JoueurID: int(playerID), PartieID: int(matchID)}).First(&posPartie)
+
+	if posPartie.JoueurID != int(playerID) {
+		return nil, fmt.Errorf("No position for player %d", playerID)
+	}
+
+	posPartie.Expand(db)
+
+	pos := posPartie.Position
+
+	return &pos, nil
 }
 
 // GetPositions retourne une liste de positions occupées par le joueur
-func (d *Datasource) GetPositions(playerID int) ([]models.Position, error) {
+func (d *Datasource) GetPositions(playerID uint) (*[]models.Position, error) {
 	var err error
 
 	db, err := gorm.Open(d.dbType, d.dbConn)
@@ -150,7 +213,7 @@ func (d *Datasource) GetPositions(playerID int) ([]models.Position, error) {
 
 	positionParties := []models.JoueurPositionPartie{}
 
-	db.Where(models.JoueurPositionPartie{JoueurID: playerID}).Find(&positionParties)
+	db.Where(models.JoueurPositionPartie{JoueurID: int(playerID)}).Find(&positionParties)
 
 	for i := 0; i < len(positionParties); i++ {
 		positionParties[i].Expand(db)
@@ -158,10 +221,23 @@ func (d *Datasource) GetPositions(playerID int) ([]models.Position, error) {
 	}
 
 	for k := range positionsMap {
-		positions = append(positions, k)
+		alreadyAdded := false
+
+		// On vérifie l'absence de la position de la liste
+		// (Il n'y a pas de .indexOf() en Go)
+		for iP := 0; iP < len(positions) && !alreadyAdded; iP++ {
+			p := positions[iP]
+			if k.ID == p.ID {
+				alreadyAdded = true
+			}
+		}
+
+		if !alreadyAdded {
+			positions = append(positions, k)
+		}
 	}
 
-	return positions, nil
+	return &positions, nil
 }
 
 // GetMatch obtient toutes les informations sur un match
@@ -192,8 +268,8 @@ func (d *Datasource) GetMatch(matchID uint) (*models.Partie, error) {
 	return &match, err
 }
 
-// GetLastMatch retourne le dernier match joué par une équipe.
-func (d *Datasource) GetLastMatch(teamID uint) (*models.Partie, error) {
+// GetLatestMatch retourne le dernie match d'une equipe dont l'ID est reçu en paramètre.
+func (d *Datasource) GetLatestMatch(teamID uint) (*models.Partie, error) {
 	var err error
 
 	db, err := gorm.Open(d.dbType, d.dbConn)
@@ -204,14 +280,23 @@ func (d *Datasource) GetLastMatch(teamID uint) (*models.Partie, error) {
 
 	defer db.Close()
 
-	lastMatch := models.Partie{}
+	match := models.Partie{}
 
 	tID := int(teamID)
 
-	db.Where(models.Partie{EquipeMaisonID: tID}).Or(models.Partie{EquipeAdverseID: tID}).Last(&lastMatch)
+	db.Where(models.Partie{EquipeMaisonID: tID}).Or(models.Partie{EquipeAdverseID: tID}).Last(&match)
 
-	return &lastMatch, err
+	if match.EquipeMaisonID != tID && match.EquipeAdverseID != tID {
+		return nil, fmt.Errorf("Last match for team %d not found", teamID)
+	}
 
+	match.Expand(db)
+
+	for i := 0; i < len(match.Actions); i++ {
+		match.Actions[i].Expand(db)
+	}
+
+	return &match, err
 }
 
 // GetCoach retourne l'instance de l'entraineur correspondant au ID
@@ -220,11 +305,11 @@ func (d *Datasource) GetCoach(coachID uint) (*models.Entraineur, error) {
 
 	db, err := gorm.Open(d.dbType, d.dbConn)
 
-	defer db.Close()
-
 	if err != nil {
 		return nil, err
 	}
+
+	defer db.Close()
 
 	e := models.Entraineur{}
 
@@ -237,4 +322,127 @@ func (d *Datasource) GetCoach(coachID uint) (*models.Entraineur, error) {
 	db.Model(&e).Association("Equipes").Find(&e.Equipes)
 
 	return &e, err
+}
+
+// CreateMetric crée une nouvelle métrique
+func (d *Datasource) CreateMetric(name string, formula string, description string, teamID uint) error {
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+
+	metric := models.Metrique{Nom: name, Equation: formula, Description: description, EquipeID: int(teamID)}
+
+	db.Create(&metric)
+
+	return nil
+}
+
+// UpdateMetric modifie une métrique existante
+func (d *Datasource) UpdateMetric(metricID uint, name string, formula string, description string) error {
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+
+	m := models.Metrique{
+		Nom:         name,
+		Equation:    formula,
+		Description: description,
+	}
+
+	db.Model(&m).Where("ID = ?", metricID).Updates(m)
+
+	return nil
+}
+
+// DeleteMetric supprime une métrique existante
+func (d *Datasource) DeleteMetric(metricID uint) error {
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+
+	m := models.Metrique{}
+
+	db.First(&m, metricID)
+
+	if m.ID != metricID {
+		// Metric not found. No worries tho
+		return nil
+	}
+
+	db.Delete(&m)
+
+	return nil
+}
+
+// GetMetrics retourne une liste de toutes les métriques d'une équipe
+func (d *Datasource) GetMetrics(teamID uint) (*[]models.Metrique, error) {
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	metrics := []models.Metrique{}
+
+	db.Where(&models.Metrique{EquipeID: int(teamID)}).Find(&metrics)
+
+	return &metrics, nil
+}
+
+// GetMapSize retourne un objet contenant les paramètres de la map
+func (d *Datasource) GetMapSize(teamID uint) (*models.MapParameters, error) {
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	params := models.MapParameters{}
+
+	db.Where(&models.MapParameters{EquipeID: int(teamID)}).Find(&params)
+
+	return &params, nil
+}
+
+// SetMapSize change les paramètres déja entrés de la map
+func (d *Datasource) SetMapSize(width int, height int, teamID uint) error {
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+
+	params := models.MapParameters{}
+
+	db.Where(&models.MapParameters{EquipeID: int(teamID)}).Find(&params)
+	if uint(params.EquipeID) == teamID {
+		db.Model(&params).Update("Longeur", width)
+		db.Model(&params).Update("Largeur", height)
+	} else {
+		params := models.MapParameters{Longeur: width, Largeur: height, EquipeID: int(teamID)}
+		db.Create(&params)
+	}
+
+	return nil
 }

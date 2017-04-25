@@ -132,8 +132,9 @@ func TestDatasource(t *testing.T) {
 	}
 
 	for _, c := range matchCases {
-		t.Run("GetLastMatch() doesn't fail", func(t *testing.T) {
-			_, err := d.GetLastMatch(c.TestID)
+
+		t.Run("GetLatestMatch() doesn't fail", func(t *testing.T) {
+			_, err := d.GetLatestMatch(c.TestID)
 
 			if !c.IsNil && err != nil {
 				t.Errorf("Unexpected exception: %s", err.Error())
@@ -148,8 +149,16 @@ func TestDatasource(t *testing.T) {
 			}
 		})
 
-		t.Run("GetLastMatch() returns nil when match not found", func(t *testing.T) {
-			match, err := d.GetLastMatch(c.TestID)
+		t.Run("GetLatestMatch() returns correct match", func(t *testing.T) {
+			match, _ := d.GetLatestMatch(c.TestID)
+
+			if !c.IsNil && (match.EquipeMaisonID != int(c.ExpectID)) && (match.EquipeAdverseID != int(c.ExpectID)) {
+				t.Errorf("Expected a team with this ID %d", c.ExpectID)
+			}
+		})
+
+		t.Run("GetLatestMatch returns nil when team not found", func(t *testing.T) {
+			match, err := d.GetLatestMatch(c.TestID)
 
 			if c.IsNil && ((match != nil) || err == nil) {
 				t.Errorf("Expected match to be Nil, got ID %d instead", match.ID)
