@@ -196,6 +196,70 @@ func (d *Datasource) GetMatchPosition(playerID uint, matchID uint) (*models.Posi
 	return &pos, nil
 }
 
+// GetAllTeamsMatchs retourne tous matchs de toutes les équipes d'une saison donnée.
+func (d *Datasource) GetAllTeamsMatchs(seasonID uint) ([]models.Partie, error) {
+	var err error
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	if seasonID <= 0 {
+		return nil, fmt.Errorf("Invalid SeasonID value in GetAllTeamsMatchs function")
+	}
+
+	// Toutes les équipes.
+	allTeams := []models.Equipe{}
+
+	allMatches := []models.Partie{}
+
+	//Get all teams. NOT REALLY GOOD BUT THERE IS CURRENTLY NO WAY TO HAVE
+	//A LIST OF TEAMS BASED ON A GIVEN SEASON.
+	if err := db.Find(&allTeams).Error; err != nil {
+		return nil, fmt.Errorf("No team found in GetAllTeamsMatchs function")
+	}
+
+	for _, team := range allTeams {
+		matches, err := d.GetMatches(team.ID, seasonID)
+
+		if err != nil {
+			continue
+		}
+
+		for _, match := range *matches {
+			allMatches = append(allMatches, match)
+		}
+	}
+
+	return allMatches, err
+}
+
+// GetAllPositions retourne toutes les positions des joueurs.
+func (d *Datasource) GetAllPositions() ([]models.Position, error) {
+	var err error
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	allPositions := []models.Position{}
+
+	if err := db.Find(&allPositions).Error; err != nil {
+		return nil, fmt.Errorf("No position found in GetAllPositions function")
+	}
+
+	return allPositions, err
+
+}
+
 // GetPositions retourne une liste de positions occupées par le joueur
 func (d *Datasource) GetPositions(playerID uint) (*[]models.Position, error) {
 	var err error
