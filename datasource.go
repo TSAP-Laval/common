@@ -27,6 +27,7 @@ type IDatasource interface {
 	GetMetrics(teamID uint) (*[]models.Metrique, error)
 	GetMapSize(teamID uint) (*models.MapParameters, error)
 	SetMapSize(width int, height int, teamID uint) error
+	GetTypeActions() (*[]models.TypeAction, error)
 }
 
 // Datasource représente une connexion à une base de
@@ -39,6 +40,22 @@ type Datasource struct {
 // NewDatasource retourne une nouvelle datasource
 func NewDatasource(dbType string, dbConnString string) *Datasource {
 	return &Datasource{dbType: dbType, dbConn: dbConnString}
+}
+
+// GetTypeActions retourne tous les types d'actions
+func (d *Datasource) GetTypeActions() (*[]models.TypeAction, error) {
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+	defer db.Close()
+
+	s := []models.TypeAction{}
+
+	db.Find(&s)
+
+	return &s, nil
 }
 
 // GetCurrentSeason retourne la saison en cours
