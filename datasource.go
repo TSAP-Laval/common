@@ -16,7 +16,7 @@ type IDatasource interface {
 	GetTeam(teamID uint) (*models.Equipe, error)
 	GetPlayer(playerID uint) (*models.Joueur, error)
 	GetMatches(teamID uint, seasonID uint) (*[]models.Partie, error)
-	GetMatchesInfos(teamID uint, seasonID uint) (*[]models.Partie, error)
+	GetMatchesInfos(teamID uint) (*[]models.Partie, error)
 	GetMatchActions(teamID uint, matchID uint) (*models.Partie, error)
 	GetMatchPosition(playerID uint, matchID uint) (*models.Position, error)
 	GetPositions(playerID uint) (*[]models.Position, error)
@@ -156,7 +156,7 @@ func (d *Datasource) GetMatches(teamID uint, seasonID uint) (*[]models.Partie, e
 }
 
 // GetMatchesInfos retourne seulement les informations gémérales sur les matchs
-func (d *Datasource) GetMatchesInfos(teamID uint, seasonID uint) (*[]models.Partie, error) {
+func (d *Datasource) GetMatchesInfos(teamID uint) (*[]models.Partie, error) {
 	var err error
 
 	db, err := gorm.Open(d.dbType, d.dbConn)
@@ -170,9 +170,8 @@ func (d *Datasource) GetMatchesInfos(teamID uint, seasonID uint) (*[]models.Part
 	matches := []models.Partie{}
 
 	t := int(teamID)
-	s := int(seasonID)
 
-	db.Where(models.Partie{EquipeMaisonID: t, SaisonID: s}).Or(models.Partie{EquipeAdverseID: t, SaisonID: s}).Find(&matches)
+	db.Where(models.Partie{EquipeMaisonID: t}).Or(models.Partie{EquipeAdverseID: t}).Find(&matches)
 
 	for i := 0; i < len(matches); i++ {
 		matches[i].Expand(db)
