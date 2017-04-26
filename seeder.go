@@ -105,6 +105,12 @@ func SeedData(dbType string, connString string, dataFolder string) error {
 
 	playerIndex := 0
 
+	var metriqueData []models.Metrique
+	err = jsonLoad(path.Join(dataFolder, "metriques.json"), &metriqueData)
+	if err != nil {
+		return err
+	}
+
 	for i := 0; i < len(equipeData); i++ {
 		equipe := &equipeData[i]
 		x := &models.Sport{}
@@ -127,6 +133,12 @@ func SeedData(dbType string, connString string, dataFolder string) error {
 		}
 
 		db.Create(&equipe)
+
+		for _, metrique := range metriqueData {
+			metrique.Description = "Description de la métrique"
+			metrique.EquipeID = int(equipe.ID)
+			db.Create(&metrique)
+		}
 	}
 
 	admin := models.Administrateur{Email: "admin@admin.com", PassHash: "admin"}
@@ -139,16 +151,6 @@ func SeedData(dbType string, connString string, dataFolder string) error {
 	}
 	for i := 0; i < len(positionData); i++ {
 		db.Create(&positionData[i])
-	}
-
-	var metriqueData []models.Metrique
-	err = jsonLoad(path.Join(dataFolder, "metriques.json"), &metriqueData)
-	if err != nil {
-		return err
-	}
-	for _, metrique := range metriqueData {
-		metrique.Description = "Description de la métrique"
-		db.Create(&metrique)
 	}
 
 	video := models.Video{Path: "aucun video", AnalyseTermine: false}
