@@ -11,6 +11,9 @@ import (
 // d'une struct capable de servir de source de données
 // pour l'application
 type IDatasource interface {
+	GetAllGamesAllPlayerGivenSeason(seasonID uint) (*AllGamesAllPlayerGivenSeason, error)
+	GetAllPositions() (*[]models.Position, error)
+	GetAllTeamsForGivenSeason(seasonID uint) (*[]models.Equipe, error)
 	GetCurrentSeason() (*models.Saison, error)
 	GetSeasons() (*[]models.Saison, error)
 	GetTeam(teamID uint) (*models.Equipe, error)
@@ -35,6 +38,13 @@ type IDatasource interface {
 type Datasource struct {
 	dbType string
 	dbConn string
+}
+
+// AllGamesAllPlayerGivenSeason représente toutes les Partie
+// ainsi que tous les joueurs ayant participé aux partie.
+type AllGamesAllPlayerGivenSeason struct {
+	games     *[]models.Partie
+	nbJoueurs int
 }
 
 // NewDatasource retourne une nouvelle datasource
@@ -194,70 +204,6 @@ func (d *Datasource) GetMatchPosition(playerID uint, matchID uint) (*models.Posi
 	pos := posPartie.Position
 
 	return &pos, nil
-}
-
-// GetAllTeamsMatchs retourne tous matchs de toutes les équipes d'une saison donnée.
-func (d *Datasource) GetAllTeamsMatchs(seasonID uint) ([]models.Partie, error) {
-	var err error
-
-	db, err := gorm.Open(d.dbType, d.dbConn)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer db.Close()
-
-	if seasonID <= 0 {
-		return nil, fmt.Errorf("Invalid SeasonID value in GetAllTeamsMatchs function")
-	}
-
-	// Toutes les équipes.
-	allTeams := []models.Equipe{}
-
-	allMatches := []models.Partie{}
-
-	//Get all teams. NOT REALLY GOOD BUT THERE IS CURRENTLY NO WAY TO HAVE
-	//A LIST OF TEAMS BASED ON A GIVEN SEASON.
-	if err := db.Find(&allTeams).Error; err != nil {
-		return nil, fmt.Errorf("No team found in GetAllTeamsMatchs function")
-	}
-
-	for _, team := range allTeams {
-		matches, err := d.GetMatches(team.ID, seasonID)
-
-		if err != nil {
-			continue
-		}
-
-		for _, match := range *matches {
-			allMatches = append(allMatches, match)
-		}
-	}
-
-	return allMatches, err
-}
-
-// GetAllPositions retourne toutes les positions des joueurs.
-func (d *Datasource) GetAllPositions() ([]models.Position, error) {
-	var err error
-
-	db, err := gorm.Open(d.dbType, d.dbConn)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer db.Close()
-
-	allPositions := []models.Position{}
-
-	if err := db.Find(&allPositions).Error; err != nil {
-		return nil, fmt.Errorf("No position found in GetAllPositions function")
-	}
-
-	return allPositions, err
-
 }
 
 // GetPositions retourne une liste de positions occupées par le joueur
@@ -509,4 +455,139 @@ func (d *Datasource) SetMapSize(width int, height int, teamID uint) error {
 	}
 
 	return nil
+}
+
+// GetAllGamesAllPlayerGivenSeason retourne tous matchs et le nombre de joueurs
+//de toutes les équipes d'une saison donnée.
+func (d *Datasource) GetAllGamesAllPlayerGivenSeason(seasonID uint) (*AllGamesAllPlayerGivenSeason, error) {
+	var err error
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	// TODO : Replace the seasonID by the season name.
+	if seasonID <= 0 {
+		return nil, fmt.Errorf("Invalid SeasonID value in GetAllTeamsMatchs function")
+	}
+
+	// Toutes les équipes.
+	//allTeams := []models.Equipe{}
+
+	allMatches := []models.Partie{}
+	//Get all teams. NOT REALLY GOOD BUT THERE IS CURRENTLY NO WAY TO HAVE
+	//A LIST OF TEAMS BASED ON A GIVEN SEASON.
+	//if err := db.Find(&allTeams).Error; err != nil {
+	//	return nil, fmt.Errorf("No team found in GetAllTeamsMatchs function")
+	//}
+
+	//OR
+	allTeams, err := d.GetAllTeamsForGivenSeason(seasonID)
+
+	var nbPlayers int
+
+	if err != nil {
+		return nil, fmt.Errorf("No team found in GetAllTeamsMatchs function")
+	}
+
+	for _, team := range *allTeams {
+		matches, err := d.GetMatches(team.ID, seasonID)
+
+		if err != nil {
+			continue
+		}
+
+		nbPlayers += len(team.Joueurs)
+
+		for _, match := range *matches {
+			allMatches = append(allMatches, match)
+		}
+	}
+
+	returnedStruct := AllGamesAllPlayerGivenSeason{
+		games:     &allMatches,
+		nbJoueurs: nbPlayers,
+	}
+
+	return &returnedStruct, err
+}
+
+// GetAllPositions retourne toutes les positions des joueurs.
+func (d *Datasource) GetAllPositions() (*[]models.Position, error) {
+	var err error
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	allPositions := []models.Position{}
+
+	if err := db.Find(&allPositions).Error; err != nil {
+		return nil, fmt.Errorf("No position found in GetAllPositions function")
+	}
+
+	return &allPositions, err
+
+}
+
+// GetAllTeamsForGivenSeason retourne toutes les équipes d'une saison donnée
+func (d *Datasource) GetAllTeamsForGivenSeason(seasonID uint) (*[]models.Equipe, error) {
+
+	var err error
+
+	db, err := gorm.Open(d.dbType, d.dbConn)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	if seasonID <= 0 {
+		return nil, fmt.Errorf("Invalid SeasonID value in GetAllTeamsMatchs function")
+	}
+
+	sID := int(seasonID)
+
+	GivenSeasonTeams := []models.Equipe{}
+
+	// Toutes les équipes.
+	HomeTeams := []models.Equipe{}
+
+	AwayTeams := []models.Equipe{}
+
+	RealHomeTeams := []models.Equipe{}
+
+	//NOT REALLY GOOD BUT THERE IS CURRENTLY NO WAY TO
+	//CREATE AN UNION QUERY.
+
+	if err := db.Table("Partie").Select("EquipeMaison").Find(&HomeTeams, "SeasonID = ?", sID).Error; err != nil {
+		return nil, fmt.Errorf("No HomeTeam found in GetAllTeamsForGivenSeason function")
+	}
+
+	if err := db.Table("Partie").Select("EquipeAdverse").Not(HomeTeams).Find(&AwayTeams, "SeasonID = ?", sID).Error; err != nil {
+		return nil, fmt.Errorf("No AwayTeam found in GetAllTeamsForGivenSeason function")
+	}
+
+	for _, team := range AwayTeams {
+		GivenSeasonTeams = append(GivenSeasonTeams, team)
+	}
+
+	if err := db.Table("Partie").Select("EquipeMaison").Not(AwayTeams).Find(&RealHomeTeams, "SeasonID = ?", sID).Error; err != nil {
+		return nil, fmt.Errorf("No HomeTeam found in GetAllTeamsForGivenSeason function")
+	}
+
+	for _, team := range RealHomeTeams {
+		GivenSeasonTeams = append(GivenSeasonTeams, team)
+	}
+
+	return &GivenSeasonTeams, err
 }
