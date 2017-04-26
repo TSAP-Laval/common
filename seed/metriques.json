@@ -1,17 +1,14 @@
 [
 	{
 		"nom": "Volume de jeu",
-		"equation": "BC + BR",
-		"EquipeID": 1
+		"equation": "BC + BR"
 	},
     {
 		"nom": "Indice d'efficacité",
-		"equation": "(BC + PO + TB)/(BC + BR)",
-		"EquipeID": 1
+		"equation": "(BC + PO + TB)/(BC + BR)"
 	},
     {
 		"nom": "Score de performance",
-		"equation": "(BC + BR) + ((BC + PO + TB)/(BC + BR))",
-		"EquipeID": 1
+		"equation": "(BC + BR) + ((BC + PO + TB)/(BC + BR))"
 	}
 ]
