@@ -13,7 +13,6 @@ import (
 type IDatasource interface {
 	GetAllGamesAllPlayerGivenSeason(seasonID uint) (*AllGamesAllPlayerGivenSeason, error)
 	GetAllPositions() (*[]models.Position, error)
-	GetAllTeamsForGivenSeason(seasonID uint) (*[]models.Equipe, error)
 	GetCurrentSeason() (*models.Saison, error)
 	GetSeasons() (*[]models.Saison, error)
 	GetTeam(teamID uint) (*models.Equipe, error)
@@ -43,8 +42,8 @@ type Datasource struct {
 // AllGamesAllPlayerGivenSeason représente toutes les Partie
 // ainsi que tous les joueurs ayant participé aux partie.
 type AllGamesAllPlayerGivenSeason struct {
-	games     *[]models.Partie
-	nbJoueurs int
+	Games   []models.Partie
+	Players []models.Joueur
 }
 
 // NewDatasource retourne une nouvelle datasource
@@ -472,36 +471,48 @@ func (d *Datasource) GetAllGamesAllPlayerGivenSeason(seasonID uint) (*AllGamesAl
 
 	// TODO : Replace the seasonID by the season name.
 	if seasonID <= 0 {
-		return nil, fmt.Errorf("Invalid SeasonID value in GetAllTeamsMatchs function")
+		return nil, fmt.Errorf("Invalid SeasonID value in GetAllGamesAllPlayerGivenSeason function")
 	}
 
-	// Toutes les équipes.
-	//allTeams := []models.Equipe{}
+	allTeams := []models.Equipe{}
 
 	allMatches := []models.Partie{}
+
 	//Get all teams. NOT REALLY GOOD BUT THERE IS CURRENTLY NO WAY TO HAVE
 	//A LIST OF TEAMS BASED ON A GIVEN SEASON.
-	//if err := db.Find(&allTeams).Error; err != nil {
-	//	return nil, fmt.Errorf("No team found in GetAllTeamsMatchs function")
-	//}
-
-	//OR
-	allTeams, err := d.GetAllTeamsForGivenSeason(seasonID)
-
-	var nbPlayers int
-
-	if err != nil {
+	if err := db.Find(&allTeams).Error; err != nil {
 		return nil, fmt.Errorf("No team found in GetAllTeamsMatchs function")
 	}
 
-	for _, team := range *allTeams {
+	var joueurs []models.Joueur
+	var bTrouve bool
+
+	for _, team := range allTeams {
+
+		db.Model(&team).Association("Joueurs").Find(&team.Joueurs)
+
 		matches, err := d.GetMatches(team.ID, seasonID)
 
 		if err != nil {
-			continue
+			return nil, fmt.Errorf("No match found in GetAllGamesAllPlayerGivenSeason function")
 		}
 
-		nbPlayers += len(team.Joueurs)
+		if len(joueurs) >= 0 {
+			joueurs = append(joueurs, team.Joueurs...)
+		} else {
+			for _, jTeam := range team.Joueurs {
+				//CE N'EST PAS NICE MAIS J'AI TENTÉ D'UTILISER UNE MAP
+				// LE RÉSULTAT N'ÉTAIS PAS CONCLUANT.
+				for _, jSlice := range joueurs {
+					if jTeam.ID == jSlice.ID {
+						bTrouve = true
+					}
+				}
+				if !bTrouve {
+					joueurs = append(joueurs, jTeam)
+				}
+			}
+		}
 
 		for _, match := range *matches {
 			allMatches = append(allMatches, match)
@@ -509,8 +520,8 @@ func (d *Datasource) GetAllGamesAllPlayerGivenSeason(seasonID uint) (*AllGamesAl
 	}
 
 	returnedStruct := AllGamesAllPlayerGivenSeason{
-		games:     &allMatches,
-		nbJoueurs: nbPlayers,
+		Games:   allMatches,
+		Players: joueurs,
 	}
 
 	return &returnedStruct, err
@@ -536,58 +547,4 @@ func (d *Datasource) GetAllPositions() (*[]models.Position, error) {
 
 	return &allPositions, err
 
-}
-
-// GetAllTeamsForGivenSeason retourne toutes les équipes d'une saison donnée
-func (d *Datasource) GetAllTeamsForGivenSeason(seasonID uint) (*[]models.Equipe, error) {
-
-	var err error
-
-	db, err := gorm.Open(d.dbType, d.dbConn)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer db.Close()
-
-	if seasonID <= 0 {
-		return nil, fmt.Errorf("Invalid SeasonID value in GetAllTeamsMatchs function")
-	}
-
-	sID := int(seasonID)
-
-	GivenSeasonTeams := []models.Equipe{}
-
-	// Toutes les équipes.
-	HomeTeams := []models.Equipe{}
-
-	AwayTeams := []models.Equipe{}
-
-	RealHomeTeams := []models.Equipe{}
-
-	//NOT REALLY GOOD BUT THERE IS CURRENTLY NO WAY TO
-	//CREATE AN UNION QUERY.
-
-	if err := db.Table("Partie").Select("EquipeMaison").Find(&HomeTeams, "SeasonID = ?", sID).Error; err != nil {
-		return nil, fmt.Errorf("No HomeTeam found in GetAllTeamsForGivenSeason function")
-	}
-
-	if err := db.Table("Partie").Select("EquipeAdverse").Not(HomeTeams).Find(&AwayTeams, "SeasonID = ?", sID).Error; err != nil {
-		return nil, fmt.Errorf("No AwayTeam found in GetAllTeamsForGivenSeason function")
-	}
-
-	for _, team := range AwayTeams {
-		GivenSeasonTeams = append(GivenSeasonTeams, team)
-	}
-
-	if err := db.Table("Partie").Select("EquipeMaison").Not(AwayTeams).Find(&RealHomeTeams, "SeasonID = ?", sID).Error; err != nil {
-		return nil, fmt.Errorf("No HomeTeam found in GetAllTeamsForGivenSeason function")
-	}
-
-	for _, team := range RealHomeTeams {
-		GivenSeasonTeams = append(GivenSeasonTeams, team)
-	}
-
-	return &GivenSeasonTeams, err
 }
