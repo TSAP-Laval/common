@@ -132,6 +132,7 @@ func TestDatasource(t *testing.T) {
 	}
 
 	for _, c := range matchCases {
+
 		t.Run("GetLatestMatch() doesn't fail", func(t *testing.T) {
 			_, err := d.GetLatestMatch(c.TestID)
 
