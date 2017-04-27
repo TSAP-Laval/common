@@ -141,14 +141,6 @@ func TestDatasource(t *testing.T) {
 			}
 		})
 
-		t.Run("GetLastMatch() returns correct match for the right team", func(t *testing.T) {
-			match, _ := d.GetLastMatch(c.TestID)
-
-			if !c.IsNil && (match.EquipeAdverseID != int(c.ExpectID)) && (match.EquipeMaisonID != int(c.ExpectID)) {
-				t.Errorf("Expected a match for this teamid %d", c.ExpectID)
-			}
-		})
-
 		t.Run("GetLatestMatch() returns correct match", func(t *testing.T) {
 			match, _ := d.GetLatestMatch(c.TestID)
 
